@@ -1,0 +1,2 @@
+Forex historical data for python.
+https://www.reddit.com/r/algotrading/comments/ab2e0v/forex_historical_data_for_python/
