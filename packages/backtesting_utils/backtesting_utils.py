@@ -73,7 +73,8 @@ class Backtest:
             low      1.155110e+00
             close    1.155260e+00
             """
-    
+        self.strategy.check_open_movements()
+        
     def next(self):
         if self._data_test._has_next():
             return self.strategy.on_price_event(self._data_test._next())

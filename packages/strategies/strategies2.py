@@ -119,24 +119,13 @@ class StrategyMovementTracker:
         # 1) If there is not open operation, open one
         if self.entry_price == None:
             self.start_tracking(data['open'], 0.1, 0.07)
-            # print("Open")
-            # str_ep = "ep: " + str(data['open'])
-            # str_up = "up: " + str(self.entry_price + (self.entry_price*self.long_percentage))
-            # str_lp = "lp: " + str(self.entry_price - (self.entry_price*self.max_correction_percentage))
-            # print(str_ep + " | " + str_up + " | " + str_lp)
 
         # 2) Check and set max price
         max_value = max([data["open"], data["high"], data["low"], data["close"]])
         if (max_value > self.max_price):
             self.max_price = max_value
             self.set_max_correction(self.max_price)
-        #     print("max change")
-        #     str_ep = "ep: " + str(data['open'])
-        #     str_up = "up: " + str(self.entry_price + (self.entry_price*self.long_percentage))
-        #     str_lp = "lp: " + str(max_value - (max_value*self.max_correction_percentage))
-        #     print(str_ep + " | " + str_up + " | " + str_lp)
 
-        # print("--------------------------------------------------")
         # 3) Send data to price trigger
         self.price_trigger.on_price_event(data)
         

@@ -1,6 +1,6 @@
 from packages.backtesting_utils.backtesting_utils import Backtest
 import pandas as pd
-from packages.strategies.strategies2 import StrategyMovementTracker
+from packages.strategies.strategies3 import StrategyMovementTracker
 from packages.charts.tradingview_utils import create_rect
 from packages.json_utils.adapters import JsonInvestingAdapter
 
@@ -45,14 +45,6 @@ class ChartsController:
         self.strategy = StrategyMovementTracker()
         self.backtest = Backtest(self.data, self.strategy)
 
-    # def set_all_data(self, strategy):
-    #     candlesticks = []
-    #     rects = []
-    #     for i, row in self.data.iterrows():
-    #         candlesticks.append({ 'time': row['time'], 'open': row['open'], 'high': row['high'], 'low': row['low'], 'close': row['close'] })
-        
-    #     return {'candlesticks': candlesticks, 'rects': rects}
-
     def get_all(self):
         self.backtest.clear()
         self.backtest.run()
@@ -60,10 +52,14 @@ class ChartsController:
         return self.all_data
 
     def analyze(self, data_json):
+        # 1) Get necessary data
         data = self.normalize_data(data_json['file'])
+        max_correction_percentage = float(data_json['maxCorrectionPercentage'])
+
+        self.backtest = None
         self.strategy = StrategyMovementTracker()
+        self.strategy.short_percentage = max_correction_percentage/100
         self.backtest = Backtest(data, self.strategy)
-        self.backtest.clear()
         self.backtest.run()
         data = self.set_all_data(self.strategy)
         return data
@@ -71,7 +67,7 @@ class ChartsController:
     def normalize_data(self, json_data):
         # Create a DataFrame from the CSV data
         column_names = json_data[0]
-        data_rows = json_data[1:]
+        data_rows = json_data[1:] 
         data = pd.DataFrame(data_rows, columns=column_names)
 
         adapter = JsonInvestingAdapter()
@@ -79,13 +75,28 @@ class ChartsController:
         adapter.convert_to_base_format()
         return adapter.get_data_base_format()
 
+    # def set_all_data(self, strategy):
+    #     candlesticks = []
+    #     rects = []
+    #     for i, row in self.data.iterrows():
+    #         candlesticks.append({ 'time': row['time'], 'open': row['open'], 'high': row['high'], 'low': row['low'], 'close': row['close'] })
+        
+    #     for i in strategy.movements:
+    #         rects.append(create_rect(i.entry_price, i.close_price, i.candlesticks))
+        
+    #     return {'candlesticks': candlesticks, 'rects': rects}
+
+    # strategy 3
     def set_all_data(self, strategy):
         candlesticks = []
         rects = []
         for i, row in self.data.iterrows():
             candlesticks.append({ 'time': row['time'], 'open': row['open'], 'high': row['high'], 'low': row['low'], 'close': row['close'] })
         
-        for i in strategy.movements:
-            rects.append(create_rect(i.entry_price, i.close_price, i.candlesticks))
+        for move in strategy.movements:
+            move_candlesticks = move.candlesticks_until_max
+            entry_price = move.entry_price
+            close_price = move.max_value_candlestick['value']
+            rects.append(create_rect(entry_price, close_price, move_candlesticks))
         
         return {'candlesticks': candlesticks, 'rects': rects}
