@@ -1,6 +1,7 @@
 from packages.backtesting_utils.backtesting_utils import Backtest
 import pandas as pd
 from packages.strategies.strategies3 import StrategyMovementTracker
+from packages.strategies.strategies3 import NormalDistribution
 from packages.charts.tradingview_utils import create_rect
 from packages.json_utils.adapters import JsonInvestingAdapter
 
@@ -41,9 +42,10 @@ class ChartsController:
     """
 
     def __init__(self):
-        self.data = pd.read_csv(path_ggal_norm)
-        self.strategy = StrategyMovementTracker()
-        self.backtest = Backtest(self.data, self.strategy)
+        # self.data = pd.read_csv(path_ggal_norm)
+        # self.strategy = StrategyMovementTracker()
+        # self.backtest = Backtest(self.data, self.strategy)
+        pass
 
     def get_all(self):
         self.backtest.clear()
@@ -51,17 +53,21 @@ class ChartsController:
         self.all_data = self.set_all_data(self.strategy)
         return self.all_data
 
+    def clear(self):
+        self.backtest = None
+        self.strategy = None
+
     def analyze(self, data_json):
         # 1) Get necessary data
         data = self.normalize_data(data_json['file'])
         max_correction_percentage = float(data_json['maxCorrectionPercentage'])
 
-        self.backtest = None
+        # self.backtest = None
         self.strategy = StrategyMovementTracker()
         self.strategy.short_percentage = max_correction_percentage/100
         self.backtest = Backtest(data, self.strategy)
         self.backtest.run()
-        data = self.set_all_data(self.strategy)
+        data = self.set_all_data(self.strategy, data)
         return data
 
     def normalize_data(self, json_data):
@@ -75,28 +81,41 @@ class ChartsController:
         adapter.convert_to_base_format()
         return adapter.get_data_base_format()
 
-    # def set_all_data(self, strategy):
-    #     candlesticks = []
-    #     rects = []
-    #     for i, row in self.data.iterrows():
-    #         candlesticks.append({ 'time': row['time'], 'open': row['open'], 'high': row['high'], 'low': row['low'], 'close': row['close'] })
+    # Strategy 3
+    def set_all_data(self, strategy, data):
+        candlesticks = self.setup_candlesticks(data)
+        rects = self.setup_movement_rects(strategy.movements)
+        normal_distribution = self.setup_normal_distribution(strategy.movements)
         
-    #     for i in strategy.movements:
-    #         rects.append(create_rect(i.entry_price, i.close_price, i.candlesticks))
-        
-    #     return {'candlesticks': candlesticks, 'rects': rects}
-
-    # strategy 3
-    def set_all_data(self, strategy):
+        return {
+            'candlesticksChart': {'candlesticks': candlesticks, 'rects': rects},
+            'normDistChart': normal_distribution
+        }
+        # return {'candlesticks': candlesticks, 'rects': rects, 'normalDist': normal_distribution}
+    
+    def setup_candlesticks(self, data):
         candlesticks = []
-        rects = []
-        for i, row in self.data.iterrows():
+        for i, row in data.iterrows():
             candlesticks.append({ 'time': row['time'], 'open': row['open'], 'high': row['high'], 'low': row['low'], 'close': row['close'] })
-        
-        for move in strategy.movements:
+        return candlesticks
+
+    def setup_movement_rects(self, movements):
+        rects = []
+        for move in movements:
             move_candlesticks = move.candlesticks_until_max
             entry_price = move.entry_price
             close_price = move.max_value_candlestick['value']
             rects.append(create_rect(entry_price, close_price, move_candlesticks))
-        
-        return {'candlesticks': candlesticks, 'rects': rects}
+        return rects
+
+    def setup_normal_distribution(self, movements):
+        interval = 0.02
+        normal_distribution = NormalDistribution(movements, interval)
+        x = normal_distribution.calculate()
+        data = {'labels': [], 'data': []}
+        for i in x:
+            label = str(round(i*100, 4)) + "% - " + str(round((i + 0.019)*100, 4)) + "%"
+            data['labels'].append(label)
+            data['data'].append(x[i])
+        return data
+

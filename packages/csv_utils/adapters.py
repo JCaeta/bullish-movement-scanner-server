@@ -35,7 +35,13 @@ class CsvInvestingAdapter(IDataAdapter):
         formatter = PandasFormatter()
 
         # 1) Get the columns we need
-        self.__data_base_format = self.__data[['Date', 'Price', 'Open', 'High', 'Low']]
+        try:
+            # some code here that may raise an exception
+            self.__data_base_format = self.__data[['Date', 'Price', 'Open', 'High', 'Low']]
+        except:
+            # code to handle the exception
+            if self.__data == None:
+                print("Error: data is None. Ensure you are reading the data with the read_data() method")
 
         # 2) Rename columns
         self.__data_base_format = self.__data_base_format[['Date', 'Price', 'Open', 'High', 'Low']]

@@ -16,8 +16,30 @@
 # backtest.run()
 
 # ----------------------------------------------------------------------------------------------------------
-import pandas as pd
-data_dir = "D:\\documents storage\\repositories\\Reusables\\financials_visualization_reusables\\Data\\"
-path_ggal = data_dir + "GGAL.csv"
-data = pd.read_csv(path_ggal)
-print(data) 
+# import pandas as pd
+# data_dir = "D:\\documents storage\\repositories\\Reusables\\financials_visualization_reusables\\Data\\"
+# path_ggal = data_dir + "GGAL.csv"
+# data = pd.read_csv(path_ggal)
+# print(data) 
+
+# ------------------------------------------------------------------------------
+# percentages = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+# interval = 20
+
+# def distribute_percentages(percentages, interval):
+#     max_perc = max(percentages)
+#     i = 0
+#     intervals = {}
+#     intervals[i] = 0
+#     while i <= max_perc:
+#         i += interval
+#         intervals[i] = 0
+
+#     for p in percentages:
+#         for i in intervals:
+#             if p <= i:
+#                 intervals[i - interval] += 1
+#     return intervals
+
+# result = distribute_percentages(percentages, interval)
+# print(result)

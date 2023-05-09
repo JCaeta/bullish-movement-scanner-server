@@ -58,7 +58,7 @@ class Backtest:
     def run(self):
         # Iterate through the data one at a time.
         self._data_test._init()
-        
+
         while(self._data_test._has_next()):
             # Obtain the current data value
             current_data = self._data_test._next()

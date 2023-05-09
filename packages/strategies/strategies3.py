@@ -102,6 +102,41 @@ class StrategyPriceTrigger:
     def set_lower_price(self, lower_price):
         self.lower_price = lower_price
 
+class NormalDistribution:
+    # This normal distribution calculate percentages
+
+    def __init__(self, movements = [], interval = 0.05):
+        self.interval = interval
+        self.max_value = None
+        self.min_value = None
+        self.x = {}
+        self.y = {}
+        self.movements = movements
+
+    def calculate(self):
+        percentages = []
+        for move in self.movements:
+            max_value = move.max_value_candlestick['value']
+            entry_price = move.entry_price
+            perc = (max_value - entry_price)/entry_price
+            percentages.append(perc)
+        
+        # Set intervals
+        max_perc = max(percentages)
+        min_perc = min(percentages)
+        i = 0
+        self.x[i] = 0
+        while i <= max_perc:
+            i += self.interval
+            self.x[round(i, 4)] = 0
+
+        for p in percentages:
+            for i in self.x:
+                if p <= i:
+                    self.x[round(i - self.interval, 4)] += 1
+                    break
+        return self.x
+
 class StrategyMovementTracker:
     def __init__(self):
         self.entry_price = None
@@ -115,7 +150,6 @@ class StrategyMovementTracker:
     def clear(self):
         self.entry_price = None
         self.long_percentage = None
-        # self.short_percentage = None
         self.upper_price = None
         self.lower_price = None
         self.movements = []
@@ -128,18 +162,17 @@ class StrategyMovementTracker:
         self.upper_price = None
         self.lower_price = None
 
-    def start_tracking(self, entry_price: float, max_correction_percentage: float):
+    def start_tracking(self, entry_price: float):
         self.entry_price = entry_price
-        self.max_correction_percentage = max_correction_percentage
         self.max_price = self.entry_price
 
-        lower_price = self.entry_price - (self.entry_price*self.max_correction_percentage)
+        lower_price = self.entry_price - (self.entry_price*self.short_percentage)
         self.price_trigger = StrategyPriceTrigger(entry_price = self.entry_price, 
                                                   lower_price = lower_price, 
                                                   func_lower_close = self.func_lower_close)
 
     def set_max_correction(self, max_price):
-        self.price_trigger.set_lower_price(max_price - (max_price*self.max_correction_percentage))
+        self.price_trigger.set_lower_price(max_price - (max_price*self.short_percentage))
 
     def set_current_data(self, data):
         """
@@ -149,7 +182,7 @@ class StrategyMovementTracker:
         if self.entry_price == None:
             min_value = min([data["open"], data["high"], data["low"], data["close"]])
             # self.start_tracking(min_value, 0.1, 0.1)
-            self.start_tracking(min_value, self.short_percentage)
+            self.start_tracking(min_value)
 
         # 2) Check and set max price
         self.check_max_correction(data)

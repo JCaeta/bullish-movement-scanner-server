@@ -37,6 +37,7 @@ def analysis():
 def normalize():
     data = request.get_json()
     data = controller.normalize_data(data)
+    controller.clear()
     return jsonify(data)
 
 if __name__ == '__main__':
