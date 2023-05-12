@@ -21,7 +21,8 @@ app = Flask(__name__)
 CORS(app, origins=[
     "http://localhost:6006",
     "http://127.0.0.1:5173",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "https://market-tools-27f02.web.app"
 ])
 app.config['CORS HEADERS'] = 'Content-Type'
 
