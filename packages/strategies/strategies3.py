@@ -105,12 +105,13 @@ class StrategyPriceTrigger:
 class NormalDistribution:
     # This normal distribution calculate percentages
 
-    def __init__(self, movements = [], interval = 0.05):
+    def __init__(self, movements = [], interval = 0.02):
         self.interval = interval
         self.max_value = None
         self.min_value = None
         self.x = {}
         self.y = {}
+        self.max_n_intervals = 100
         self.movements = movements
 
     def calculate(self):
@@ -121,21 +122,46 @@ class NormalDistribution:
             perc = (max_value - entry_price)/entry_price
             percentages.append(perc)
         
+        self.setup_intervals(percentages)
         # Set intervals
-        max_perc = max(percentages)
-        min_perc = min(percentages)
-        i = 0
-        self.x[i] = 0
-        while i <= max_perc:
-            i += self.interval
-            self.x[round(i, 4)] = 0
+        # max_perc = max(percentages)
+        # i = 0
+        # self.x[i] = 0
+        # while i <= max_perc:
+        #     i += self.interval
+        #     self.x[round(i, 4)] = 0
 
-        for p in percentages:
-            for i in self.x:
-                if p <= i:
-                    self.x[round(i - self.interval, 4)] += 1
-                    break
+        # for p in percentages:
+        #     for i in self.x:
+        #         if p <= i:
+        #             self.x[round(i - self.interval, 4)] += 1
+        #             break
         return self.x
+    
+    def setup_intervals(self, percentages):
+        if(len(percentages) > 0):
+            max_perc = max(percentages)
+            n_intervals = max_perc/self.interval
+            interval_step = 0.02
+
+            while n_intervals > self.max_n_intervals:
+                self.interval += interval_step
+                n_intervals = max_perc/self.interval
+
+            i = 0
+            self.x[i] = 0
+            while i <= max_perc:
+                i += self.interval
+                self.x[round(i, 4)] = 0
+
+            for p in percentages:
+                for i in self.x:
+                    if p <= i:
+                        self.x[round(i - self.interval, 4)] += 1
+                        break
+        else:
+            self.x[0] = 0
+            return self.x
 
 class StrategyMovementTracker:
     def __init__(self):
@@ -208,8 +234,12 @@ class StrategyMovementTracker:
     def func_lower_close(self):
         move = self.price_trigger.movement
         if len(move.candlesticks_until_max) > 1:
-            if move.close_price > move.entry_price:
-                self.movements.append(move)
+            # if move.close_price > move.entry_price:
+            #     self.movements.append(move)
+            if move.close_price < move.entry_price:
+                move.close_price = move.max_value_candlestick['value']
+            self.movements.append(move)
+                
         self.clear_close()
 
     def check_open_movements(self):

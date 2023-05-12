@@ -109,12 +109,12 @@ class ChartsController:
         return rects
 
     def setup_normal_distribution(self, movements):
-        interval = 0.02
-        normal_distribution = NormalDistribution(movements, interval)
+        normal_distribution = NormalDistribution(movements)
         x = normal_distribution.calculate()
+
         data = {'labels': [], 'data': []}
         for i in x:
-            label = str(round(i*100, 4)) + "% - " + str(round((i + 0.019)*100, 4)) + "%"
+            label = str(round(i*100, 4)) + "% - " + str(round((i + (normal_distribution.interval - 0.001))*100, 4)) + "%"
             data['labels'].append(label)
             data['data'].append(x[i])
         return data

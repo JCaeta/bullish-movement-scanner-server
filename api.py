@@ -12,6 +12,7 @@ http://127.0.0.1:5000/
 from flask import Flask, jsonify, request
 from flask_cors.extension import CORS
 from controller import ChartsController
+import os
 
 app = Flask(__name__)
 
@@ -29,7 +30,6 @@ controller = ChartsController()
 @app.route('/api/analysis', methods=['POST'])
 def analysis():
     data = request.get_json()
-    # data = controller.get_all()
     data = controller.analyze(data)
     return jsonify(data)
 
@@ -41,5 +41,6 @@ def normalize():
     return jsonify(data)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=os.environ.get('PORT', 5000))
 
