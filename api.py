@@ -35,6 +35,10 @@ def analysis():
     data = controller.analyze(data)
     return jsonify(data)
 
+@app.route('/api/available', methods=['GET'])
+def serverAvailable():
+    return True
+
 # @app.route('/api/normalize', methods=['POST', ''])
 # def normalize():
 #     data = request.get_json()
