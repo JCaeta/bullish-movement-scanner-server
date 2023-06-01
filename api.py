@@ -13,7 +13,6 @@ from flask import Flask, jsonify, request
 from flask_cors.extension import CORS
 from controller import ChartsController
 import os
-# import requests
 
 app = Flask(__name__)
 
@@ -36,17 +35,12 @@ def analysis():
     return jsonify(data)
 
 @app.route('/api/available', methods=['GET'])
-def serverAvailable():
-    return True
+def available():
+    return jsonify(True)
 
-# @app.route('/api/normalize', methods=['POST', ''])
-# def normalize():
-#     data = request.get_json()
-#     data = controller.normalize_data(data)
-#     controller.clear()
-#     return jsonify(data)
 
 if __name__ == '__main__':
     # app.run(debug=True)
-    app.run(debug=True, host='0.0.0.0', port=os.environ.get('PORT', 5000))
+    # app.run(debug=True, host='0.0.0.0', port=os.environ.get('PORT', 5000))
+    app.run(debug=True, port=os.getenv("PORT", default=5000))
 
