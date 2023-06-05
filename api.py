@@ -30,9 +30,13 @@ controller = ChartsController()
 
 @app.route('/api/analysis', methods=['POST', 'GET'])
 def analysis():
-    data = request.get_json()
-    data = controller.analyze(data)
-    return jsonify(data)
+
+    try:
+        data = request.get_json()
+        data = controller.analyze(data)
+        return jsonify(data)
+    except:
+        return jsonify(-1)
 
 @app.route('/api/available', methods=['GET'])
 def available():
